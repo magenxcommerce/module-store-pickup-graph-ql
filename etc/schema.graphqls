@@ -1,0 +1,56 @@
+# Copyright © Magenx. All rights reserved.
+
+type Query {
+    storePickupLocations(
+        enabled_only: Boolean = true @doc(description: "Kept for forward compatibility; every configured location is currently returned.")
+    ): [StorePickupLocation]
+        @resolver(class: "Magenx\\StorePickupGraphQl\\Model\\Resolver\\StorePickupLocations")
+        @doc(description: "The merchant's physical stores that offer in-store pickup, configured under Stores → Configuration → Sales → Shipping Methods → In-Store Pickup.")
+        @cache(cacheable: false)
+}
+
+type Mutation {
+    setStorePickupLocationOnCart(input: SetStorePickupLocationOnCartInput!): SetStorePickupLocationOnCartOutput
+        @resolver(class: "Magenx\\StorePickupGraphQl\\Model\\Resolver\\SetStorePickupLocationOnCart")
+        @doc(description: "Record which physical store the shopper will collect the order from. Pass a null/empty location_code to clear it.")
+}
+
+input SetStorePickupLocationOnCartInput @doc(description: "Defines which pickup store is attached to a cart.") {
+    cart_id: String! @doc(description: "The masked cart id.")
+    location_code: String @doc(description: "The `code` of a configured StorePickupLocation, or null/empty to clear the selection.")
+}
+
+type SetStorePickupLocationOnCartOutput @doc(description: "The updated cart after a pickup location is set or cleared.") {
+    cart: Cart!
+}
+
+type StorePickupLocation @doc(description: "A single physical store that offers in-store pickup.") {
+    code: String! @doc(description: "Stable identifier for the location, used when attaching it to a cart.")
+    name: String! @doc(description: "Display name of the store.")
+    street: String @doc(description: "Street address.")
+    city: String @doc(description: "City.")
+    region: String @doc(description: "Region / state.")
+    postcode: String @doc(description: "Postal / ZIP code.")
+    country_id: String @doc(description: "Two-letter ISO country code.")
+    phone: String @doc(description: "Contact phone number.")
+    hours: String @doc(description: "Opening hours (free text).")
+    latitude: Float @doc(description: "Latitude for map display.")
+    longitude: Float @doc(description: "Longitude for map display.")
+}
+
+type Cart {
+    store_pickup_location: StorePickupLocation
+        @resolver(class: "Magenx\\StorePickupGraphQl\\Model\\Resolver\\Cart\\StorePickupLocation")
+        @doc(description: "The pickup store attached to this cart, or null when the order ships to an address.")
+}
+
+type CustomerOrder {
+    store_pickup_location: StorePickupLocation
+        @resolver(class: "Magenx\\StorePickupGraphQl\\Model\\Resolver\\Order\\StorePickupLocation")
+        @doc(description: "The pickup store the order will be / was collected from, or null for a shipped order.")
+}
+
+type StoreConfig {
+    store_pickup_enabled: Boolean @doc(description: "Whether in-store pickup is offered (the In-Store Pickup carrier is active).")
+    store_pickup_title: String @doc(description: "The label shown for the in-store pickup option.")
+}

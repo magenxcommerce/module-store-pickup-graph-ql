@@ -1,0 +1,12 @@
+{
+    "quote": {
+        "column": {
+            "magenx_pickup_location_code": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "magenx_pickup_location_code": true
+        }
+    }
+}

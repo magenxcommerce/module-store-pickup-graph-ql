@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magenx. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <!-- In-Store Pickup is modelled as an offline shipping carrier so it
+             appears in `available_shipping_methods` alongside the merchant's
+             other shipping methods with no special-casing in the cart. The
+             physical store addresses live under `locations` (a serialized
+             array edited through an admin grid). Disabled by default. -->
+        <carriers>
+            <magenx_storepickup>
+                <active>0</active>
+                <model>Magenx\StorePickupGraphQl\Model\Carrier\StorePickup</model>
+                <name>In-Store Pickup</name>
+                <title>In-Store Pickup</title>
+                <sallowspecific>0</sallowspecific>
+                <sort_order>15</sort_order>
+                <price>0</price>
+                <specificerrmsg>This shipping method is not available. To use it, please contact us.</specificerrmsg>
+                <locations></locations>
+            </magenx_storepickup>
+        </carriers>
+    </default>
+</config>

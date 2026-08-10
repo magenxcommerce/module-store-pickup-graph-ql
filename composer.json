@@ -1,0 +1,31 @@
+{
+    "name": "magenx/module-store-pickup-graph-ql",
+    "description": "In-store pickup for a headless Magento storefront: an offline 'In-Store Pickup' shipping carrier, admin-configured physical store addresses, a storePickupLocations GraphQL query, a setStorePickupLocationOnCart mutation, and the chosen pickup location echoed on Cart / CustomerOrder. Leaves the core modules untouched.",
+    "config": {
+        "sort-packages": true
+    },
+    "require": {
+        "php": "~8.3.0||~8.4.0||~8.5.0",
+        "magento/framework": "*",
+        "magento/module-config": "*",
+        "magento/module-directory": "*",
+        "magento/module-quote": "*",
+        "magento/module-quote-graph-ql": "*",
+        "magento/module-sales": "*",
+        "magento/module-store": "*",
+        "magento/module-store-graph-ql": "*"
+    },
+    "type": "magento2-module",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Magenx\\StorePickupGraphQl\\": ""
+        }
+    }
+}

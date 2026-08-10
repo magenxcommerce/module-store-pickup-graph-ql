@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magenx. All rights reserved.
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <!-- The chosen pickup-location code is carried on the quote and copied onto
+         the placed order (see Observer\CopyPickupLocationToOrder). A single
+         nullable varchar avoids an extra table: the human-readable address is
+         always resolved from config by the location code, so only the code is
+         persisted. -->
+    <table name="quote" resource="checkout" engine="innodb">
+        <column xsi:type="varchar" name="magenx_pickup_location_code" length="64" nullable="true"
+                comment="In-Store Pickup: selected location code"/>
+    </table>
+    <table name="sales_order" resource="sales" engine="innodb">
+        <column xsi:type="varchar" name="magenx_pickup_location_code" length="64" nullable="true"
+                comment="In-Store Pickup: selected location code"/>
+    </table>
+</schema>

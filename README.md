@@ -1,0 +1,88 @@
+# Magenx_StorePickupGraphQl
+
+In-store pickup ("ship to store") for a headless Magento storefront, exposed
+entirely over GraphQL. It follows the same "extend with GraphQL, leave the core
+untouched" split the other companion modules use (BestSellerGraphQl,
+ProductAlertGraphQl, …).
+
+## What it adds
+
+* **An offline "In-Store Pickup" shipping carrier** (`magenx_storepickup`) so the
+  option appears in a cart's `available_shipping_methods` like any other carrier
+  — no special-casing in the cart.
+* **Admin-configured physical stores.** Stores → Configuration → Sales →
+  **Shipping Methods → In-Store Pickup** has a repeatable-row grid of locations
+  (code, name, street, city, region, postcode, country, phone, hours,
+  latitude/longitude). "Enabled" is the carrier's `active` flag.
+* **GraphQL surface:**
+  * `Query.storePickupLocations` — the configured stores for the current store
+    view (unauthenticated; guests can pick up too).
+  * `Mutation.setStorePickupLocationOnCart(input: { cart_id, location_code })` —
+    records which store the shopper collects from (pass a null/empty
+    `location_code` to clear it). The code is validated against config.
+  * `Cart.store_pickup_location` / `CustomerOrder.store_pickup_location` — the
+    chosen store hydrated back into a full address.
+  * `StoreConfig.store_pickup_enabled` / `store_pickup_title` — so the storefront
+    can gate its picker and label the option without a second round trip.
+
+## How the selection is persisted
+
+A single nullable `magenx_pickup_location_code` column is added to `quote` and
+`sales_order` (`etc/db_schema.xml`). The mutation writes it on the quote; the
+`sales_model_service_quote_submit_before` observer
+(`Observer\CopyPickupLocationToOrder`) copies it onto the order at placement.
+The code is never duplicated into a stored address — `Cart` / `CustomerOrder`
+`store_pickup_location` always resolve the human-readable address from config by
+the code, so editing a store's address in admin updates historical orders'
+displayed pickup address too.
+
+### The order/invoice shipping address is the store address
+
+At placement the same observer **overwrites the order's shipping address with the
+chosen store's address** (street / city / region / postcode / country / phone,
+with the store name as company), keeping the shopper as the recipient
+(firstname / lastname / email). Without this the order — and the invoice and
+shipment derived from it — would carry the shopper's own address and could not be
+routed to the pickup store. The store's `region` string is resolved to a
+`region_id` (via `RegionFactory`) where possible so the address is complete for
+region-required countries; it falls back to the free-text region otherwise.
+
+Note: the *quote* keeps the shopper's address, so shipping-rate and tax totals
+are still computed against it; only the resulting **order** address is rewritten
+to the store.
+
+## Storefront flow (reference)
+
+In-store pickup appears as a normal option in the shipping-methods list
+(`magenx_storepickup`). At checkout the shopper enters their address, selects the
+In-Store Pickup method, and picks a store from the inline list; the storefront
+then calls `setStorePickupLocationOnCart` with the location code. The order's
+shipping address is swapped to the store server-side at placement (above), so the
+shopper's own address on the quote is untouched by the picker.
+
+The Contact page also renders the same `storePickupLocations` as a store locator
+with an embedded Google map.
+
+## Install
+
+```
+bin/magento module:enable Magenx_StorePickupGraphQl
+bin/magento setup:upgrade
+```
+
+Then enable and add locations under Stores → Configuration → Sales → Shipping
+Methods → In-Store Pickup. This section lives beside the native shipping
+carriers (it *is* a carrier — the "Enabled" flag is the carrier `active` flag),
+so it is intentionally **not** in the Magenx configuration tab.
+
+### Admin "Store Locations" layout
+
+Each store has 11 fields. The stock `AbstractFieldArray` renders them as one wide
+inline table row, which overflows the config column and squeezes sibling
+sections. The `Locations` block therefore uses a custom template
+(`view/adminhtml/templates/system/config/form/field/store-locations.phtml`) that
+renders each store as a labelled card whose fields wrap to fit the container
+(styled by `view/adminhtml/web/css/store-locations.css`, loaded on the config
+page via `adminhtml_system_config_edit.xml`). The core row-add / delete / prefill
+JavaScript is preserved verbatim — only the per-row markup changed from table
+cells to a flex-wrap grid, so the serialized value format is unchanged.

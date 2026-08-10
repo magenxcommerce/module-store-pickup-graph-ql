@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magenx. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <!-- Expose the In-Store Pickup admin settings on the storeConfig GraphQL
+         query so the storefront can gate its pickup UI (and label the option)
+         without a second round trip. "Enabled" is simply the carrier's `active`
+         flag — turning the shipping method on turns the storefront picker on. -->
+    <type name="Magento\StoreGraphQl\Model\Resolver\Store\StoreConfigDataProvider">
+        <arguments>
+            <argument name="extendedConfigData" xsi:type="array">
+                <item name="store_pickup_enabled" xsi:type="string">carriers/magenx_storepickup/active</item>
+                <item name="store_pickup_title" xsi:type="string">carriers/magenx_storepickup/title</item>
+            </argument>
+        </arguments>
+    </type>
+</config>

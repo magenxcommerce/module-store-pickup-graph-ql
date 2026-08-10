@@ -1,0 +1,175 @@
+<?php
+/**
+ * Copyright © Magenx. All rights reserved.
+ *
+ * Grouped, wrapping layout for the store-pickup locations field-array.
+ *
+ * The stock Magento_Config array.phtml lays every column out as an inline
+ * table cell. With 11 columns per store that row grows past ~1100px, overflows
+ * the admin config container and squeezes the sibling sections. This template
+ * keeps the exact core row-add / delete / prefill JavaScript mechanics but
+ * renders each row as a labelled card whose cells wrap to fit the container.
+ *
+ * @var \Magenx\StorePickupGraphQl\Block\Adminhtml\Form\Field\Locations $block
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
+ */
+?>
+<?php $_htmlId = $block->getHtmlId() ? $block->getHtmlId() : '_' . uniqid(); ?>
+
+<div class="magenx-store-locations" id="grid<?= $block->escapeHtmlAttr($_htmlId) ?>">
+    <div id="addRow<?= $block->escapeHtmlAttr($_htmlId) ?>" class="magenx-store-rows"></div>
+    <div class="magenx-store-add">
+        <button id="addToEndBtn<?= $block->escapeHtmlAttr($_htmlId) ?>"
+                class="action-add"
+                title="<?= $block->escapeHtmlAttr(__('Add')) ?>"
+                type="button">
+            <span><?= $block->escapeHtml($block->getAddButtonLabel()) ?></span>
+        </button>
+    </div>
+    <input type="hidden" name="<?= $block->escapeHtmlAttr($block->getElement()->getName()) ?>[__empty]" value="" />
+
+    <?php
+    $scriptString = <<<script
+        require([
+            'mage/template',
+            'prototype'
+        ], function (mageTemplate) {
+        // create row creator
+        window.arrayRow{$block->escapeJs($_htmlId)} = {
+
+            // define row prototypeJS template
+            template: mageTemplate(
+                    '<div class="magenx-store-row" id="<%- _id %>">'
+script;
+    foreach ($block->getColumns() as $columnName => $column):
+        $label = $block->escapeJs($block->escapeHtml((string) $column['label']));
+        $cell = $block->escapeJs($block->renderCellTemplate($columnName));
+        $scriptString .= <<<script
+
+                        + '<div class="magenx-store-cell magenx-store-cell-{$block->escapeJs($columnName)}">'
+                        + '<span class="magenx-store-label">{$label}<\/span>'
+                        + '{$cell}'
+                        + '<\/div>'
+script;
+    endforeach;
+
+    if ($block->isAddAfter()):
+        $scriptString .= <<<script
+
+                        + '<div class="magenx-store-cell magenx-store-actions"><button class="action-add" type="button" id="addAfterBtn<%- _id %>"><span>'
+                        + '{$block->escapeJs(__('Add after'))}'
+                        + '<\/span><\/button><\/div>'
+script;
+    endif;
+    $scriptString .= <<<script
+
+                    + '<div class="magenx-store-cell magenx-store-actions"><button '
+                    + 'class="action-delete" type="button">'
+                    + '<span>{$block->escapeJs(__('Delete'))}<\/span><\/button><\/div>'
+                    + '<\/div>'
+
+script;
+    $scriptString1 = /* @noEscape */ $secureRenderer->renderEventListenerAsTag(
+        'onclick',
+        "arrayRow" . $block->escapeJs($_htmlId) . ".del('<%- _id %>')",
+        "#<%- _id %> button.action-delete"
+    );
+
+    $scriptString .= " + '" . $block->escapeJs($scriptString1) . "'" . PHP_EOL;
+
+    $scriptString .= <<<script
+            ),
+
+            add: function(rowData, insertAfterId) {
+                // generate default template data
+                var templateValues;
+
+                // Prepare template values
+                if (rowData) {
+                    templateValues = rowData;
+                } else {
+                    var d = new Date();
+                    templateValues = {
+script;
+    foreach ($block->getColumns() as $columnName => $column):
+        $scriptString .= <<<script
+
+                            {$block->escapeJs($columnName)}: '',
+                                'option_extra_attrs': {},
+script;
+    endforeach;
+    $scriptString .= <<<script
+
+                        _id: '_' + d.getTime() + '_' + d.getMilliseconds()
+                };
+            }
+
+            // Insert new row after specified row or at the bottom
+            if (insertAfterId) {
+                Element.insert($(insertAfterId), {after: this.template(templateValues)});
+            } else {
+                Element.insert($('addRow{$block->escapeJs($_htmlId)}'), {bottom: this.template(templateValues)});
+            }
+
+            // Fill controls with data
+            if (rowData) {
+                var rowInputElementNames = Object.keys(rowData.column_values);
+                for (var i = 0; i < rowInputElementNames.length; i++) {
+                    if ($(rowInputElementNames[i])) {
+                        $(rowInputElementNames[i]).setValue(rowData.column_values[rowInputElementNames[i]]);
+                    }
+                }
+            }
+
+            // Add event for {addAfterBtn} button
+
+script;
+    if ($block->isAddAfter()):
+        $scriptString .= <<<script
+
+            Event.observe('addAfterBtn' + templateValues._id, 'click', this.add.bind(this, false, templateValues._id));
+
+script;
+    endif;
+    $scriptString .= <<<script
+
+            },
+
+            del: function(rowId) {
+                $(rowId).remove();
+            }
+        }
+
+        // bind add action to "Add" button in last row
+        Event.observe('addToEndBtn{$block->escapeJs($_htmlId)}',
+            'click',
+            arrayRow{$block->escapeJs($_htmlId)}.add.bind(
+                arrayRow{$block->escapeJs($_htmlId)}, false, false
+            )
+        );
+
+        // add existing rows
+
+script;
+
+    foreach ($block->getArrayRows() as $_rowId => $_row) {
+        $scriptString .= /** @noEscape */ " arrayRow" . $block->escapeJs($_htmlId) .
+            ".add(" . /** @noEscape */ $_row->toJson() . ");\n";
+    }
+    $scriptString .= <<<script
+
+        // Toggle the grid availability, if element is disabled (depending on scope)
+script;
+    if ($block->getElement()->getDisabled()):
+        $scriptString .= <<<script
+
+        toggleValueElements({checked: true}, $('grid{$block->escapeJs($_htmlId)}').parentNode);
+script;
+    endif;
+    $scriptString .= <<<script
+
+        });
+script;
+    ?>
+    <?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
+</div>

@@ -1,0 +1,78 @@
+/**
+ * Copyright © Magenx. All rights reserved.
+ *
+ * Grouped, wrapping layout for the In-Store Pickup "Store Locations" field.
+ * Replaces the stock single-wide-row table so 11 fields per store wrap inside
+ * the admin config column instead of overflowing and squeezing the page.
+ */
+
+.magenx-store-locations {
+    max-width: 100%;
+}
+
+.magenx-store-locations .magenx-store-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.magenx-store-locations .magenx-store-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 10px 15px;
+    padding: 15px;
+    border: 1px solid #d6d6d6;
+    border-radius: 3px;
+    background: #fafafa;
+}
+
+.magenx-store-locations .magenx-store-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1 1 140px;
+    min-width: 120px;
+}
+
+/* Narrow fields don't need to claim a full flex track. */
+.magenx-store-locations .magenx-store-cell-code,
+.magenx-store-locations .magenx-store-cell-postcode,
+.magenx-store-locations .magenx-store-cell-region,
+.magenx-store-locations .magenx-store-cell-latitude,
+.magenx-store-locations .magenx-store-cell-longitude {
+    flex: 0 1 110px;
+    min-width: 90px;
+}
+
+/* Street/hours benefit from more room. */
+.magenx-store-locations .magenx-store-cell-street,
+.magenx-store-locations .magenx-store-cell-hours {
+    flex: 2 1 220px;
+}
+
+.magenx-store-locations .magenx-store-label {
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: #303030;
+}
+
+.magenx-store-locations .magenx-store-cell input,
+.magenx-store-locations .magenx-store-cell select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.magenx-store-locations .magenx-store-actions {
+    flex: 0 0 auto;
+    min-width: 0;
+    justify-content: flex-end;
+}
+
+.magenx-store-locations .magenx-store-actions .action-delete {
+    margin-bottom: 3px;
+}
+
+.magenx-store-locations .magenx-store-add {
+    margin-top: 15px;
+}
