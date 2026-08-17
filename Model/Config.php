@@ -38,6 +38,13 @@ class Config
     ];
 
     /**
+     * Decoded locations, memoized per store for the lifetime of this request.
+     *
+     * @var array<string, array<int, array<string, mixed>>>
+     */
+    private array $locationsCache = [];
+
+    /**
      * @param ScopeConfigInterface $scopeConfig
      * @param Json $serializer
      */
@@ -81,19 +88,24 @@ class Config
      */
     public function getLocations(?int $storeId = null): array
     {
+        $cacheKey = (string) $storeId;
+        if (isset($this->locationsCache[$cacheKey])) {
+            return $this->locationsCache[$cacheKey];
+        }
+
         $raw = (string) $this->scopeConfig->getValue(self::XML_PATH_LOCATIONS, ScopeInterface::SCOPE_STORE, $storeId);
         if ($raw === '') {
-            return [];
+            return $this->locationsCache[$cacheKey] = [];
         }
 
         try {
             $decoded = $this->serializer->unserialize($raw);
         } catch (\InvalidArgumentException $e) {
-            return [];
+            return $this->locationsCache[$cacheKey] = [];
         }
 
         if (!is_array($decoded)) {
-            return [];
+            return $this->locationsCache[$cacheKey] = [];
         }
 
         $locations = [];
@@ -118,7 +130,7 @@ class Config
             $locations[$code] = $location;
         }
 
-        return array_values($locations);
+        return $this->locationsCache[$cacheKey] = array_values($locations);
     }
 
     /**
