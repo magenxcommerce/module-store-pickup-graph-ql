@@ -44,7 +44,13 @@ displayed pickup address too.
 At placement the same observer **overwrites the order's shipping address with the
 chosen store's address** (street / city / region / postcode / country / phone,
 with the store name as company), keeping the shopper as the recipient
-(firstname / lastname / email). Without this the order — and the invoice and
+(firstname / lastname / email). It does this **only when the order was actually
+placed with the `magenx_storepickup` carrier** — the location and the shipping
+method are set by two independent mutations and nothing in the schema clears one
+when the other changes, so a stale code on the quote must not be allowed to
+reroute a delivery order to a store. A quote carrying a code but shipping by any
+other carrier (and any virtual quote) is left completely alone: no code on the
+order, no address rewrite. Without this the order — and the invoice and
 shipment derived from it — would carry the shopper's own address and could not be
 routed to the pickup store. The store's `region` string is resolved to a
 `region_id` (via `RegionFactory`) where possible so the address is complete for
