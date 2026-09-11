@@ -52,11 +52,24 @@ class CountryColumn extends Select
 
     /**
      * @inheritDoc
+     *
+     * The field-array renderer hands the column definition to the renderer
+     * block (setColumn), but — unlike the plain text cells it builds itself —
+     * does nothing with the column's `class`. Apply it here so
+     * `'class' => 'required-entry'` on the country column validates the
+     * <select> like any other required admin field.
      */
     public function _toHtml()
     {
         if (!$this->getOptions()) {
+            // Not a multiselect, so the source prepends a blank
+            // "--Please Select--" option: required-entry rejects exactly that.
             $this->setOptions($this->countrySource->toOptionArray());
+        }
+
+        $column = $this->getColumn();
+        if (is_array($column) && !empty($column['class']) && !$this->getClass()) {
+            $this->setClass((string) $column['class']);
         }
 
         return parent::_toHtml();

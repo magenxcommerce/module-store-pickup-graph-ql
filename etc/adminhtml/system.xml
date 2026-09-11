@@ -27,8 +27,8 @@
                 <field id="locations" translate="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Store Locations</label>
                     <frontend_model>Magenx\StorePickupGraphQl\Block\Adminhtml\Form\Field\Locations</frontend_model>
-                    <backend_model>Magento\Config\Model\Config\Backend\Serialized\ArraySerialized</backend_model>
-                    <comment>Physical stores customers can collect from. "Code" must be a unique, stable identifier (e.g. "berlin-mitte"). Latitude/Longitude are optional and used for the map on the Contact page.</comment>
+                    <backend_model>Magenx\StorePickupGraphQl\Model\Config\Backend\Locations</backend_model>
+                    <comment>Physical stores customers can collect from. "Code" must be a unique, stable identifier (e.g. "berlin-mitte"). "Country" is required: a pickup order's shipping address is rewritten to the store's, and an address with no country breaks order lookups and region validation. For a region-required country enter the region code (e.g. "CA"), not its full name. Latitude/Longitude are optional and used for the map on the Contact page.</comment>
                 </field>
                 <field id="sort_order" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
                     <label>Sort Order</label>

@@ -16,7 +16,8 @@ ProductAlertGraphQl, …).
 * **Admin-configured physical stores.** Stores → Configuration → Sales →
   **Shipping Methods → In-Store Pickup** has a repeatable-row grid of locations
   (code, name, street, city, region, postcode, country, phone, hours,
-  latitude/longitude). "Enabled" is the carrier's `active` flag.
+  latitude/longitude). Code, name and country are required; the rest are
+  optional. "Enabled" is the carrier's `active` flag.
 * **GraphQL surface:**
   * `Query.storePickupLocations` — the configured stores for the current store
     view (unauthenticated; guests can pick up too).
@@ -95,3 +96,27 @@ renders each store as a labelled card whose fields wrap to fit the container
 page via `adminhtml_system_config_edit.xml`). The core row-add / delete / prefill
 JavaScript is preserved verbatim — only the per-row markup changed from table
 cells to a flex-wrap grid, so the serialized value format is unchanged.
+
+### Country is required on every location
+
+`Model\Config\Backend\Locations` (the field's backend model) rejects a save
+where any filled-in location has no country, and the grid's country `<select>`
+carries `required-entry` so the admin form catches it before posting. Enforcing
+it in the backend model means `bin/magento config:set` and every other save path
+is held to the same rule, not just the grid.
+
+The reason is the address rewrite above. A location without a country leaves the
+order's shipping address with whatever country the shopper's address carried, or
+none at all — and `sales_order_address.country_id` is read downstream as a plain
+string: `netresearch/module-shipping-core` passes it straight into a `string`
+parameter, so a NULL there is a TypeError that fails the entire
+`customer { orders }` query, not just the shipping data it wanted. A blank
+country also stops `region` resolving to a `region_id`, since region codes are
+only unique per country.
+
+Reads stay tolerant on purpose: `Model\Config` still returns locations saved
+before this guard existed (and `StorePickupLocation.country_id` stays nullable in
+the schema), so a legacy location keeps resolving on the historical orders that
+reference it rather than disappearing from them. Fixing such a row is a matter of
+opening the config section, choosing its country and saving — the save is now
+blocked until every location has one.

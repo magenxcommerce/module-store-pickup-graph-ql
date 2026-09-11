@@ -13,8 +13,9 @@ use Magento\Framework\View\Element\BlockInterface;
 /**
  * Admin repeatable-row grid for configuring physical store pickup locations.
  *
- * The rows are serialized by the core ArraySerialized backend model configured
- * on the field, and read back by {@see \Magenx\StorePickupGraphQl\Model\Config}.
+ * The rows are serialized by the {@see \Magenx\StorePickupGraphQl\Model\Config\Backend\Locations}
+ * backend model configured on the field — core ArraySerialized plus a required
+ * country — and read back by {@see \Magenx\StorePickupGraphQl\Model\Config}.
  */
 class Locations extends AbstractFieldArray
 {
@@ -59,8 +60,14 @@ class Locations extends AbstractFieldArray
         $this->addColumn('postcode', [
             'label' => __('Postcode'),
         ]);
+        // Required: an order collected from a location without a country ends
+        // up with an incomplete shipping address — see the country_id note on
+        // \Magenx\StorePickupGraphQl\Model\Config\Backend\Locations, which
+        // enforces the same rule on every save path. CountryColumn applies the
+        // class to the rendered <select>.
         $this->addColumn('country_id', [
             'label' => __('Country'),
+            'class' => 'required-entry',
             'renderer' => $this->getCountryRenderer(),
         ]);
         $this->addColumn('phone', [
