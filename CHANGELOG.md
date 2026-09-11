@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/magenxcommerce/module-store-pickup-graph-ql/compare/v1.0.1...v1.0.2) (2026-09-11)
+
+
+### Bug Fixes
+
+* Guard pickup location application against stale quote codes ([#8](https://github.com/magenxcommerce/module-store-pickup-graph-ql/issues/8)) ([c02a70b](https://github.com/magenxcommerce/module-store-pickup-graph-ql/commit/c02a70b6b5f27074479a2a2c6e71fec0c386303a))
+* only rewrite the order address when pickup was actually selected ([c02a70b](https://github.com/magenxcommerce/module-store-pickup-graph-ql/commit/c02a70b6b5f27074479a2a2c6e71fec0c386303a))
+
 ## [1.0.1](https://github.com/magenxcommerce/module-store-pickup-graph-ql/compare/v1.0.0...v1.0.1) (2026-08-17)
 
 
