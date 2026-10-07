@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace Magenx\StorePickupGraphQl\Model;
 
 use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\ObjectManager\ResetAfterRequestInterface;
 use Magento\Framework\Serialize\Serializer\Json;
 use Magento\Store\Model\ScopeInterface;
 
@@ -14,7 +15,7 @@ use Magento\Store\Model\ScopeInterface;
  * Typed access to the In-Store Pickup carrier configuration
  * (Stores → Configuration → Sales → Shipping Methods → In-Store Pickup).
  */
-class Config
+class Config implements ResetAfterRequestInterface
 {
     public const CARRIER_CODE = 'magenx_storepickup';
 
@@ -52,6 +53,14 @@ class Config
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly Json $serializer
     ) {
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function _resetState(): void
+    {
+        $this->locationsCache = [];
     }
 
     /**
