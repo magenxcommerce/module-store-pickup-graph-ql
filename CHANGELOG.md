@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/magenxcommerce/module-store-pickup-graph-ql/compare/v1.0.2...v1.0.3) (2026-10-08)
+
+
+### Bug Fixes
+
+* reset the pickup locations cache for long-lived application servers ([#10](https://github.com/magenxcommerce/module-store-pickup-graph-ql/issues/10)) ([28748e3](https://github.com/magenxcommerce/module-store-pickup-graph-ql/commit/28748e32e6ecc0e4c4b50f5a837540fb4185c3e9))
+
 ## [1.0.2](https://github.com/magenxcommerce/module-store-pickup-graph-ql/compare/v1.0.1...v1.0.2) (2026-09-11)
 
 
